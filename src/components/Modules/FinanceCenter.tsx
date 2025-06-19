@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, FileText, Plus, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, FileText, Plus, Calendar, AlertCircle, CheckCircle, Clock, PieChart, BarChart3, Target } from 'lucide-react';
 import { StatsCard } from '../Dashboard/StatsCard';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,6 +28,7 @@ export const FinanceCenter: React.FC = () => {
       sentDate: '2024-01-01',
       dueDate: '2024-01-31',
       paidDate: '2024-01-25',
+      paymentMethod: 'ACH Transfer',
       items: [
         { description: 'NLP Model Development', quantity: 1, rate: 10000, amount: 10000 },
         { description: 'Dashboard Integration', quantity: 1, rate: 5000, amount: 5000 }
@@ -41,6 +42,7 @@ export const FinanceCenter: React.FC = () => {
       sentDate: '2024-01-10',
       dueDate: '2024-02-09',
       paidDate: null,
+      paymentMethod: null,
       items: [
         { description: 'Automation Setup', quantity: 1, rate: 8500, amount: 8500 }
       ]
@@ -49,30 +51,57 @@ export const FinanceCenter: React.FC = () => {
       id: 'INV-003',
       client: 'DataFlow Inc',
       amount: 22000,
+      status: 'overdue',
+      sentDate: '2023-12-15',
+      dueDate: '2024-01-14',
+      paidDate: null,
+      paymentMethod: null,
+      items: [
+        { description: 'ML Pipeline Development', quantity: 1, rate: 15000, amount: 15000 },
+        { description: 'Analytics Dashboard', quantity: 1, rate: 7000, amount: 7000 }
+      ]
+    },
+    {
+      id: 'INV-004',
+      client: 'StartupXYZ',
+      amount: 12000,
       status: 'draft',
       sentDate: null,
       dueDate: '2024-02-15',
       paidDate: null,
+      paymentMethod: null,
       items: [
-        { description: 'ML Pipeline Development', quantity: 1, rate: 15000, amount: 15000 },
-        { description: 'Analytics Dashboard', quantity: 1, rate: 7000, amount: 7000 }
+        { description: 'Custom Dashboard', quantity: 1, rate: 12000, amount: 12000 }
       ]
     }
   ];
 
   const expenses = [
-    { id: 'EXP-001', category: 'Software', description: 'OpenAI API Credits', amount: 450, date: '2024-01-15', recurring: true },
-    { id: 'EXP-002', category: 'Infrastructure', description: 'AWS Services', amount: 280, date: '2024-01-15', recurring: true },
-    { id: 'EXP-003', category: 'Tools', description: 'Figma Pro Subscription', amount: 144, date: '2024-01-12', recurring: true },
-    { id: 'EXP-004', category: 'Legal', description: 'Contract Review', amount: 800, date: '2024-01-10', recurring: false },
-    { id: 'EXP-005', category: 'Marketing', description: 'Website Hosting', amount: 25, date: '2024-01-08', recurring: true },
+    { id: 'EXP-001', category: 'Software', description: 'OpenAI API Credits', amount: 450, date: '2024-01-15', recurring: true, vendor: 'OpenAI' },
+    { id: 'EXP-002', category: 'Infrastructure', description: 'AWS Services', amount: 280, date: '2024-01-15', recurring: true, vendor: 'Amazon Web Services' },
+    { id: 'EXP-003', category: 'Software', description: 'Figma Pro Subscription', amount: 144, date: '2024-01-12', recurring: true, vendor: 'Figma Inc.' },
+    { id: 'EXP-004', category: 'Legal', description: 'Contract Review', amount: 800, date: '2024-01-10', recurring: false, vendor: 'Wilson Sonsini' },
+    { id: 'EXP-005', category: 'Infrastructure', description: 'Website Hosting', amount: 25, date: '2024-01-08', recurring: true, vendor: 'Vercel' },
+    { id: 'EXP-006', category: 'Software', description: 'Slack Pro Plan', amount: 96, date: '2024-01-01', recurring: true, vendor: 'Slack Technologies' },
+    { id: 'EXP-007', category: 'Software', description: 'GitHub Enterprise', amount: 84, date: '2024-01-01', recurring: true, vendor: 'GitHub Inc.' },
+    { id: 'EXP-008', category: 'Marketing', description: 'Google Ads Campaign', amount: 500, date: '2024-01-05', recurring: false, vendor: 'Google LLC' },
   ];
+
+  const startupCosts = {
+    initialCapital: 100000,
+    currentCash: 75000,
+    totalInvestment: 900000,
+    burnRate: 12000,
+    runway: 6.25, // months
+    monthlyRevenue: 45000,
+    projectedBreakeven: '2024-08-01'
+  };
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: DollarSign },
-    { id: 'invoices', name: 'Invoices', icon: FileText },
-    { id: 'expenses', name: 'Expenses', icon: CreditCard },
-    { id: 'reports', name: 'Reports', icon: TrendingUp },
+    { id: 'invoices', name: 'Client Invoicing Tracker', icon: FileText },
+    { id: 'expenses', name: 'Expenses & Subscriptions', icon: CreditCard },
+    { id: 'reports', name: 'Financial Reports', icon: BarChart3 },
   ];
 
   const getStatusColor = (status: string) => {
@@ -97,8 +126,14 @@ export const FinanceCenter: React.FC = () => {
 
   const totalRevenue = invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0);
   const pendingRevenue = invoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.amount, 0);
+  const overdueRevenue = invoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0);
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthlyRecurring = expenses.filter(exp => exp.recurring).reduce((sum, exp) => sum + exp.amount, 0);
+
+  const expensesByCategory = expenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <div className="space-y-6">
@@ -132,19 +167,19 @@ export const FinanceCenter: React.FC = () => {
           color="blue"
         />
         <StatsCard
-          title="Monthly Expenses"
-          value={`$${(totalExpenses / 1000).toFixed(1)}K`}
+          title="Monthly Burn Rate"
+          value={`$${(startupCosts.burnRate / 1000).toFixed(0)}K`}
           change={-5}
           trend="down"
           icon={TrendingDown}
           color="orange"
         />
         <StatsCard
-          title="Recurring Costs"
-          value={`$${monthlyRecurring}`}
+          title="Runway"
+          value={`${startupCosts.runway.toFixed(1)}m`}
           change={8}
           trend="up"
-          icon={CreditCard}
+          icon={Target}
           color="purple"
         />
       </div>
@@ -175,40 +210,62 @@ export const FinanceCenter: React.FC = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900">Cash Flow Summary</h3>
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-green-700 font-medium">Net Profit (YTD)</span>
-                      <TrendingUp className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-gray-900">Startup Cost Sheet</h3>
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-green-700">Initial Capital</p>
+                        <p className="text-2xl font-bold text-green-900">${startupCosts.initialCapital.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-green-700">Total Investment</p>
+                        <p className="text-2xl font-bold text-green-900">${(startupCosts.totalInvestment / 1000).toFixed(0)}K</p>
+                      </div>
                     </div>
-                    <div className="text-2xl font-bold text-green-900">
-                      ${(totalRevenue - totalExpenses).toLocaleString()}
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-green-700">Current Cash</p>
+                        <p className="text-xl font-bold text-green-900">${startupCosts.currentCash.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-green-700">Monthly Burn</p>
+                        <p className="text-xl font-bold text-red-600">${startupCosts.burnRate.toLocaleString()}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-green-700 mt-1">
-                      Revenue: ${totalRevenue.toLocaleString()} - Expenses: ${totalExpenses.toLocaleString()}
-                    </p>
+
+                    <div className="pt-4 border-t border-green-200">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm text-green-700">Runway</p>
+                          <p className="text-lg font-bold text-green-900">{startupCosts.runway} months</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-green-700">Projected Breakeven</p>
+                          <p className="text-lg font-bold text-blue-600">{startupCosts.projectedBreakeven}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="font-medium text-gray-900">Recent Transactions</h4>
-                    {[
-                      { date: '2024-01-25', description: 'Payment received from TechCorp', amount: 15000, type: 'income' },
-                      { date: '2024-01-15', description: 'OpenAI API Credits', amount: -450, type: 'expense' },
-                      { date: '2024-01-15', description: 'AWS Services', amount: -280, type: 'expense' },
-                      { date: '2024-01-10', description: 'Legal Contract Review', amount: -800, type: 'expense' },
-                    ].map((transaction, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{transaction.description}</p>
-                          <p className="text-xs text-gray-500">{transaction.date}</p>
-                        </div>
-                        <span className={`font-medium ${
-                          transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {transaction.type === 'income' ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
+                    <h4 className="font-medium text-gray-900">Cash Flow Summary</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <span className="text-green-700 font-medium">Monthly Revenue</span>
+                        <span className="font-bold text-green-900">${startupCosts.monthlyRevenue.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span className="text-red-700 font-medium">Monthly Expenses</span>
+                        <span className="font-bold text-red-900">${startupCosts.burnRate.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span className="text-blue-700 font-medium">Net Monthly</span>
+                        <span className="font-bold text-blue-900">
+                          ${(startupCosts.monthlyRevenue - startupCosts.burnRate).toLocaleString()}
                         </span>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
 
@@ -218,22 +275,58 @@ export const FinanceCenter: React.FC = () => {
                   <div className="space-y-3">
                     <div className="bg-blue-50 rounded-lg p-4">
                       <h4 className="font-medium text-blue-900 mb-2">Accounts Receivable</h4>
-                      <div className="text-xl font-bold text-blue-900">${pendingRevenue.toLocaleString()}</div>
-                      <p className="text-sm text-blue-700">Outstanding invoices</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Pending Invoices</span>
+                          <span className="font-bold text-blue-900">${pendingRevenue.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-red-700">Overdue Invoices</span>
+                          <span className="font-bold text-red-900">${overdueRevenue.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t border-blue-200">
+                          <span className="text-blue-700 font-medium">Total Outstanding</span>
+                          <span className="font-bold text-blue-900">${(pendingRevenue + overdueRevenue).toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="bg-orange-50 rounded-lg p-4">
-                      <h4 className="font-medium text-orange-900 mb-2">Monthly Burn Rate</h4>
-                      <div className="text-xl font-bold text-orange-900">${monthlyRecurring.toLocaleString()}</div>
-                      <p className="text-sm text-orange-700">Recurring expenses</p>
+                      <h4 className="font-medium text-orange-900 mb-2">Expense Breakdown</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-orange-700">Recurring Subscriptions</span>
+                          <span className="font-bold text-orange-900">${monthlyRecurring.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-orange-700">One-time Expenses</span>
+                          <span className="font-bold text-orange-900">${(totalExpenses - monthlyRecurring).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t border-orange-200">
+                          <span className="text-orange-700 font-medium">Total This Month</span>
+                          <span className="font-bold text-orange-900">${totalExpenses.toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="bg-purple-50 rounded-lg p-4">
-                      <h4 className="font-medium text-purple-900 mb-2">Runway</h4>
-                      <div className="text-xl font-bold text-purple-900">
-                        {monthlyRecurring > 0 ? Math.floor(totalRevenue / monthlyRecurring) : '∞'} months
+                      <h4 className="font-medium text-purple-900 mb-2">Key Metrics</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">Gross Margin</span>
+                          <span className="font-bold text-purple-900">
+                            {Math.round(((startupCosts.monthlyRevenue - monthlyRecurring) / startupCosts.monthlyRevenue) * 100)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">Customer LTV</span>
+                          <span className="font-bold text-purple-900">$28K</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">CAC Payback</span>
+                          <span className="font-bold text-purple-900">8 months</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-purple-700">At current burn rate</p>
                     </div>
                   </div>
                 </div>
@@ -244,11 +337,37 @@ export const FinanceCenter: React.FC = () => {
           {activeTab === 'invoices' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">Invoice Management</h3>
+                <h3 className="font-semibold text-gray-900">Client Invoicing Tracker</h3>
                 <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                   <Plus className="w-4 h-4" />
                   <span>New Invoice</span>
                 </button>
+              </div>
+
+              {/* Invoice Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-medium text-green-900">Paid Invoices</h4>
+                  <p className="text-2xl font-bold text-green-900">${totalRevenue.toLocaleString()}</p>
+                  <p className="text-sm text-green-700">{invoices.filter(i => i.status === 'paid').length} invoices</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900">Pending Payment</h4>
+                  <p className="text-2xl font-bold text-blue-900">${pendingRevenue.toLocaleString()}</p>
+                  <p className="text-sm text-blue-700">{invoices.filter(i => i.status === 'sent').length} invoices</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 className="font-medium text-red-900">Overdue</h4>
+                  <p className="text-2xl font-bold text-red-900">${overdueRevenue.toLocaleString()}</p>
+                  <p className="text-sm text-red-700">{invoices.filter(i => i.status === 'overdue').length} invoices</p>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900">Draft</h4>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${invoices.filter(i => i.status === 'draft').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-700">{invoices.filter(i => i.status === 'draft').length} invoices</p>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -264,9 +383,14 @@ export const FinanceCenter: React.FC = () => {
                               {invoice.status}
                             </span>
                           </div>
+                          {invoice.status === 'overdue' && (
+                            <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                              {Math.floor((new Date().getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24))} days overdue
+                            </span>
+                          )}
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
                           <div>
                             <span className="text-gray-600">Client:</span>
                             <p className="font-medium">{invoice.client}</p>
@@ -290,6 +414,11 @@ export const FinanceCenter: React.FC = () => {
                               {invoice.paidDate || invoice.sentDate || 'Not sent'}
                             </p>
                           </div>
+
+                          <div>
+                            <span className="text-gray-600">Payment Method:</span>
+                            <p className="font-medium">{invoice.paymentMethod || 'N/A'}</p>
+                          </div>
                         </div>
                       </div>
                       
@@ -303,6 +432,11 @@ export const FinanceCenter: React.FC = () => {
                         {invoice.status === 'draft' && (
                           <button className="px-3 py-1 text-sm text-green-600 hover:bg-green-50 rounded">
                             Send
+                          </button>
+                        )}
+                        {invoice.status === 'overdue' && (
+                          <button className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                            Follow Up
                           </button>
                         )}
                       </div>
@@ -327,7 +461,7 @@ export const FinanceCenter: React.FC = () => {
           {activeTab === 'expenses' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">Expense Tracking</h3>
+                <h3 className="font-semibold text-gray-900">Expenses & Recurring Subscriptions Audit</h3>
                 <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                   <Plus className="w-4 h-4" />
                   <span>Add Expense</span>
@@ -336,53 +470,114 @@ export const FinanceCenter: React.FC = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                  <div className="space-y-3">
-                    {expenses.map((expense) => (
-                      <div key={expense.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <h4 className="font-medium text-gray-900">{expense.description}</h4>
-                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                              {expense.category}
-                            </span>
-                            {expense.recurring && (
-                              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
-                                Recurring
+                  {/* Recurring Subscriptions Section */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium text-gray-900">Recurring Subscriptions & Tools</h4>
+                      <span className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full">
+                        ${monthlyRecurring}/month
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {expenses.filter(expense => expense.recurring).map((expense) => (
+                        <div key={expense.id} className="flex items-center justify-between p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-1">
+                              <h5 className="font-medium text-orange-900">{expense.description}</h5>
+                              <span className="px-2 py-1 text-xs bg-orange-200 text-orange-800 rounded">
+                                {expense.category}
                               </span>
-                            )}
+                              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                                Monthly
+                              </span>
+                            </div>
+                            <p className="text-sm text-orange-700">Vendor: {expense.vendor}</p>
+                            <p className="text-xs text-orange-600">Last charged: {expense.date}</p>
                           </div>
-                          <p className="text-sm text-gray-600">{expense.date}</p>
+                          <div className="text-right">
+                            <p className="font-semibold text-orange-900">${expense.amount}</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <button className="px-2 py-1 text-xs text-orange-700 hover:bg-orange-200 rounded">
+                                Review
+                              </button>
+                              <button className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-red-600">${expense.amount}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* One-time Expenses */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-4">One-time Expenses</h4>
+                    <div className="space-y-3">
+                      {expenses.filter(expense => !expense.recurring).map((expense) => (
+                        <div key={expense.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-1">
+                              <h5 className="font-medium text-gray-900">{expense.description}</h5>
+                              <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                {expense.category}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Vendor: {expense.vendor}</p>
+                            <p className="text-xs text-gray-500">{expense.date}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900">${expense.amount}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <h4 className="font-medium text-gray-900">Expense Categories</h4>
-                  {[
-                    { category: 'Software', amount: 594, percentage: 35 },
-                    { category: 'Infrastructure', amount: 280, percentage: 17 },
-                    { category: 'Legal', amount: 800, percentage: 47 },
-                    { category: 'Tools', amount: 169, percentage: 10 },
-                    { category: 'Marketing', amount: 25, percentage: 1 },
-                  ].map((cat, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">{cat.category}</span>
-                        <span className="font-medium">${cat.amount}</span>
+                  {Object.entries(expensesByCategory)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([category, amount], index) => {
+                      const percentage = Math.round((amount / totalExpenses) * 100);
+                      return (
+                        <div key={index} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">{category}</span>
+                            <span className="font-medium">${amount}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-500">{percentage}% of total expenses</p>
+                        </div>
+                      );
+                    })}
+
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h5 className="font-medium text-blue-900 mb-2">Subscription Optimization</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-blue-700">Total Subscriptions:</span>
+                        <span className="font-medium text-blue-900">${monthlyRecurring}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                          style={{ width: `${cat.percentage}%` }}
-                        ></div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-700">Potential Savings:</span>
+                        <span className="font-medium text-green-600">$120/month</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-blue-700">Unused Tools:</span>
+                        <span className="font-medium text-orange-600">2 identified</span>
                       </div>
                     </div>
-                  ))}
+                    <button className="w-full mt-3 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                      Review Subscriptions
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -415,15 +610,10 @@ export const FinanceCenter: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {[
-                          { name: 'Software & Tools', amount: 763 },
-                          { name: 'Infrastructure', amount: 280 },
-                          { name: 'Legal & Professional', amount: 800 },
-                          { name: 'Marketing', amount: 25 },
-                        ].map((item, index) => (
-                          <div key={index} className="flex justify-between text-sm">
-                            <span className="text-gray-600">{item.name}</span>
-                            <span>${item.amount}</span>
+                        {Object.entries(expensesByCategory).map(([category, amount]) => (
+                          <div key={category} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{category}</span>
+                            <span>${amount}</span>
                           </div>
                         ))}
                       </div>
@@ -439,12 +629,12 @@ export const FinanceCenter: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Key Metrics</h4>
+                  <h4 className="font-medium text-gray-900">Key Financial Metrics</h4>
                   <div className="space-y-3">
                     <div className="bg-blue-50 rounded-lg p-4">
                       <h5 className="font-medium text-blue-900 mb-2">Average Invoice Value</h5>
                       <div className="text-2xl font-bold text-blue-900">
-                        ${Math.round(totalRevenue / invoices.length).toLocaleString()}
+                        ${Math.round(totalRevenue / invoices.filter(i => i.status === 'paid').length).toLocaleString()}
                       </div>
                     </div>
 
@@ -460,6 +650,33 @@ export const FinanceCenter: React.FC = () => {
                       <div className="text-2xl font-bold text-orange-900">18 days</div>
                       <p className="text-sm text-orange-700">Average payment time</p>
                     </div>
+
+                    <div className="bg-purple-50 rounded-lg p-4">
+                      <h5 className="font-medium text-purple-900 mb-2">Revenue Growth</h5>
+                      <div className="text-2xl font-bold text-purple-900">+25%</div>
+                      <p className="text-sm text-purple-700">Month over month</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h4 className="font-medium text-gray-900 mb-4">Financial Projections</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">Q1 2024 Revenue Target</p>
+                    <p className="text-xl font-bold text-blue-600">$150K</p>
+                    <p className="text-sm text-green-600">On track</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">Annual Revenue Goal</p>
+                    <p className="text-xl font-bold text-purple-600">$600K</p>
+                    <p className="text-sm text-blue-600">Achievable</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">Break-even Target</p>
+                    <p className="text-xl font-bold text-green-600">Aug 2024</p>
+                    <p className="text-sm text-green-600">Projected</p>
                   </div>
                 </div>
               </div>
