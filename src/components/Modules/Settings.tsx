@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, User, Shield, Bell, Palette, Globe, Database, Zap, Key, Download, Upload, RefreshCw, Trash2, Save, Eye, EyeOff } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, Bell, Palette, Globe, Database, Zap, Key, Download, Upload, RefreshCw, Trash2, Save, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const Settings: React.FC = () => {
@@ -20,7 +20,7 @@ export const Settings: React.FC = () => {
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'appearance', name: 'Appearance', icon: Palette },
     { id: 'integrations', name: 'Integrations', icon: Zap },
-    { id: 'system', name: 'System', icon: Settings },
+    { id: 'system', name: 'System', icon: SettingsIcon },
     { id: 'data', name: 'Data & Privacy', icon: Database },
   ];
 
@@ -106,7 +106,7 @@ export const Settings: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
         <div className="flex items-center space-x-3">
-          <Settings className="w-6 h-6 text-gray-600" />
+          <SettingsIcon className="w-6 h-6 text-gray-600" />
           <div>
             <h3 className="font-semibold text-gray-900">System Settings</h3>
             <p className="text-gray-700 text-sm">Manage your account, security, and system preferences</p>
