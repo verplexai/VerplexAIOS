@@ -252,6 +252,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
                 <span>🔧 Contractor: mike@contractor.com</span>
                 <span className="text-orange-600">Project Access</span>
               </div>
+              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                <span>👤 Client: john@techcorp.com</span>
+                <span className="text-green-600">Client Portal</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                <span>👤 Client: emma@dataflow.com</span>
+                <span className="text-green-600">Client Portal</span>
+              </div>
             </div>
             <p className="text-xs text-gray-500 text-center mt-2">Password: demo123</p>
           </div>
