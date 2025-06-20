@@ -68,6 +68,44 @@ const mockUsers: User[] = [
       { module: 'brand', access: 'view' },
       { module: 'analytics', access: 'none' },
     ]
+  },
+  {
+    id: '4',
+    name: 'John Smith',
+    email: 'john@techcorp.com',
+    role: 'client',
+    clientId: '1', // Links to TechCorp Solutions
+    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    permissions: [
+      { module: 'headquarters', access: 'none' },
+      { module: 'legal', access: 'none' },
+      { module: 'finance', access: 'none' },
+      { module: 'services', access: 'none' },
+      { module: 'clients', access: 'view' },
+      { module: 'operations', access: 'none' },
+      { module: 'wiki', access: 'none' },
+      { module: 'brand', access: 'none' },
+      { module: 'analytics', access: 'none' },
+    ]
+  },
+  {
+    id: '5',
+    name: 'Emma Wilson',
+    email: 'emma@dataflow.com',
+    role: 'client',
+    clientId: '3', // Links to DataFlow Inc
+    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    permissions: [
+      { module: 'headquarters', access: 'none' },
+      { module: 'legal', access: 'none' },
+      { module: 'finance', access: 'none' },
+      { module: 'services', access: 'none' },
+      { module: 'clients', access: 'view' },
+      { module: 'operations', access: 'none' },
+      { module: 'wiki', access: 'none' },
+      { module: 'brand', access: 'none' },
+      { module: 'analytics', access: 'none' },
+    ]
   }
 ];
 
@@ -101,22 +139,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (email: string, password: string, name: string, role: User['role'], company?: string) => {
+    // Generate clientId for client role based on company name or email domain
+    let clientId: string | undefined;
+    if (role === 'client') {
+      // For demo purposes, generate a simple clientId
+      clientId = Date.now().toString();
+    }
+
     // Create new user
     const newUser: User = {
       id: Date.now().toString(),
       name,
       email,
       role,
+      clientId,
       avatar: 'https://images.pexels.com/photos/1674752/pexels-photo-1674752.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       permissions: [
         { module: 'headquarters', access: role === 'founder' ? 'full' : 'none' },
-        { module: 'legal', access: role === 'founder' ? 'full' : 'view' },
+        { module: 'legal', access: role === 'founder' ? 'full' : role === 'team' ? 'view' : 'none' },
         { module: 'finance', access: role === 'founder' ? 'full' : 'none' },
-        { module: 'services', access: role === 'contractor' ? 'view' : 'edit' },
-        { module: 'clients', access: role === 'client' ? 'view' : 'edit' },
-        { module: 'operations', access: 'edit' },
-        { module: 'wiki', access: 'view' },
-        { module: 'brand', access: 'view' },
+        { module: 'services', access: role === 'contractor' ? 'view' : role === 'client' ? 'none' : 'edit' },
+        { module: 'clients', access: role === 'client' ? 'view' : role === 'contractor' ? 'view' : 'edit' },
+        { module: 'operations', access: role === 'client' ? 'none' : 'edit' },
+        { module: 'wiki', access: role === 'client' ? 'none' : 'view' },
+        { module: 'brand', access: role === 'client' ? 'none' : 'view' },
         { module: 'analytics', access: role === 'founder' ? 'full' : role === 'team' ? 'view' : 'none' },
       ]
     };

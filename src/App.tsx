@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -15,9 +15,20 @@ import { Analytics } from './components/Modules/Analytics';
 import { Settings } from './components/Modules/Settings';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [activeModule, setActiveModule] = useState('headquarters');
   const [isSignup, setIsSignup] = useState(false);
+
+  // Set default module based on user role
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'client') {
+        setActiveModule('clients');
+      } else {
+        setActiveModule('headquarters');
+      }
+    }
+  }, [user]);
 
   if (!isAuthenticated) {
     return (
