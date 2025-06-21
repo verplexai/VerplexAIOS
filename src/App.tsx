@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
+import { ClientPortalApp } from './components/Client/ClientPortalApp';
 import { FoundersHQ } from './components/Modules/FoundersHQ';
 import { LegalVault } from './components/Modules/LegalVault';
 import { FinanceCenter } from './components/Modules/FinanceCenter';
@@ -14,30 +15,22 @@ import { BrandCenter } from './components/Modules/BrandCenter';
 import { Analytics } from './components/Modules/Analytics';
 import { Settings } from './components/Modules/Settings';
 
-const AppContent: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+const InternalOSContent: React.FC = () => {
+  const { user } = useAuth();
   const [activeModule, setActiveModule] = useState('headquarters');
-  const [isSignup, setIsSignup] = useState(false);
 
   // Set default module based on user role
   useEffect(() => {
     if (user) {
-      if (user.role === 'client') {
-        setActiveModule('clients');
-      } else {
+      if (user.role === 'founder') {
         setActiveModule('headquarters');
+      } else if (user.role === 'team') {
+        setActiveModule('services');
+      } else if (user.role === 'contractor') {
+        setActiveModule('operations');
       }
     }
   }, [user]);
-
-  if (!isAuthenticated) {
-    return (
-      <LoginForm 
-        onToggleMode={() => setIsSignup(!isSignup)} 
-        isSignup={isSignup} 
-      />
-    );
-  }
 
   const renderModule = () => {
     switch (activeModule) {
@@ -80,6 +73,28 @@ const AppContent: React.FC = () => {
       </div>
     </div>
   );
+};
+
+const AppContent: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
+  const [isSignup, setIsSignup] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <LoginForm 
+        onToggleMode={() => setIsSignup(!isSignup)} 
+        isSignup={isSignup} 
+      />
+    );
+  }
+
+  // Route users based on their role
+  if (user?.role === 'client') {
+    return <ClientPortalApp />;
+  }
+
+  // Internal staff (founder, team, contractor) see the main OS
+  return <InternalOSContent />;
 };
 
 function App() {
