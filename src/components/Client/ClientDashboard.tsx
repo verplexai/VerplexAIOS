@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { BarChart3, FolderOpen, CreditCard, Clock, TrendingUp, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { BarChart3, FolderOpen, CreditCard, Clock, TrendingUp, CheckCircle, AlertCircle, Calendar, FileText } from 'lucide-react';
 
 export const ClientDashboard: React.FC = () => {
   const { user } = useAuth();
