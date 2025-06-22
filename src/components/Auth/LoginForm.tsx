@@ -235,34 +235,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
               }
             </button>
           </div>
-
-          {/* Demo Accounts */}
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <p className="text-sm text-gray-600 text-center mb-3">Demo Accounts:</p>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center p-2 bg-purple-50 rounded">
-                <span>👑 Founder: alex@verplex.ai</span>
-                <span className="text-purple-600">Full Access</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                <span>⚡ Team: sarah@verplex.ai</span>
-                <span className="text-blue-600">Limited Access</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-orange-50 rounded">
-                <span>🔧 Contractor: mike@contractor.com</span>
-                <span className="text-orange-600">Project Access</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
-                <span>👤 Client: john@techcorp.com</span>
-                <span className="text-green-600">Client Portal</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
-                <span>👤 Client: emma@dataflow.com</span>
-                <span className="text-green-600">Client Portal</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 text-center mt-2">Password: demo123</p>
-          </div>
         </div>
       </div>
     </div>

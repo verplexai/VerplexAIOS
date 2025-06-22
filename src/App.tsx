@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -15,22 +16,32 @@ import { BrandCenter } from './components/Modules/BrandCenter';
 import { Analytics } from './components/Modules/Analytics';
 import { Settings } from './components/Modules/Settings';
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const InternalOSContent: React.FC = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const [activeModule, setActiveModule] = useState('headquarters');
 
   // Set default module based on user role
   useEffect(() => {
-    if (user) {
-      if (user.role === 'founder') {
+    if (profile) {
+      if (profile.role === 'founder') {
         setActiveModule('headquarters');
-      } else if (user.role === 'team') {
+      } else if (profile.role === 'team') {
         setActiveModule('services');
-      } else if (user.role === 'contractor') {
+      } else if (profile.role === 'contractor') {
         setActiveModule('operations');
       }
     }
-  }, [user]);
+  }, [profile]);
 
   const renderModule = () => {
     switch (activeModule) {
@@ -76,8 +87,19 @@ const InternalOSContent: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, profile, loading } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -89,7 +111,7 @@ const AppContent: React.FC = () => {
   }
 
   // Route users based on their role
-  if (user?.role === 'client') {
+  if (profile?.role === 'client') {
     return <ClientPortalApp />;
   }
 
@@ -99,9 +121,11 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
