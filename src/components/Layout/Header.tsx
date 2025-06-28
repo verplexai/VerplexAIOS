@@ -89,13 +89,13 @@ export const Header: React.FC<HeaderProps> = ({ activeModule, onSettingsClick })
           <div className="hidden md:flex items-center space-x-2">
             <span className="text-xs text-gray-500">Demo as:</span>
             <select 
-              value={user?.role || 'founder'}
+              value={user?.profile?.role || 'admin'}
               onChange={(e) => switchRole(e.target.value as any)}
               className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="founder">👑 Founder</option>
-              <option value="team">⚡ Team</option>
-              <option value="contractor">🔧 Contractor</option>
+              <option value="admin">👑 Admin</option>
+              <option value="manager">⚡ Manager</option>
+              <option value="user">🔧 User</option>
             </select>
           </div>
 
@@ -178,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ activeModule, onSettingsClick })
               />
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                <p className="text-xs text-gray-500 capitalize">{user?.profile?.role}</p>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>
@@ -197,14 +197,14 @@ export const Header: React.FC<HeaderProps> = ({ activeModule, onSettingsClick })
                       <p className="font-medium text-gray-900">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
                       <span className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
-                        user?.role === 'founder' ? 'bg-purple-100 text-purple-700' :
-                        user?.role === 'team' ? 'bg-blue-100 text-blue-700' :
-                        user?.role === 'contractor' ? 'bg-orange-100 text-orange-700' :
+                        user?.profile?.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                        user?.profile?.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                        user?.profile?.role === 'user' ? 'bg-orange-100 text-orange-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {user?.role === 'founder' ? '👑 Founder' : 
-                         user?.role === 'team' ? '⚡ Team Member' : 
-                         user?.role === 'contractor' ? '🔧 Contractor' : 'User'}
+                        {user?.profile?.role === 'admin' ? '👑 Admin' : 
+                         user?.profile?.role === 'manager' ? '⚡ Manager' : 
+                         user?.profile?.role === 'user' ? '🔧 User' : 'User'}
                       </span>
                     </div>
                   </div>

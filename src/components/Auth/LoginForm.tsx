@@ -15,7 +15,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
     password: '',
     confirmPassword: '',
     company: '',
-    role: 'team' as const
+    role: 'user' as const
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -74,6 +74,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
             }
           </p>
         </div>
+
+        {/* Demo Credentials */}
+        {!isSignup && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-blue-900 mb-2">Demo Credentials</h3>
+            <div className="space-y-1 text-sm text-blue-800">
+              <p><strong>Founder:</strong> founder@verplex.ai / password</p>
+              <p><strong>Team:</strong> team@verplex.ai / password</p>
+              <p><strong>Contractor:</strong> contractor@verplex.ai / password</p>
+              <p><strong>Client:</strong> john@techcorp.com / password</p>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
@@ -134,8 +147,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
-                    <option value="team">Team Member</option>
-                    <option value="contractor">Contractor</option>
+                    <option value="user">Team Member</option>
+                    <option value="manager">Manager</option>
                     <option value="client">Client</option>
                   </select>
                 </div>

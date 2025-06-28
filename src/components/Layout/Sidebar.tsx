@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const modules = [
-  { id: 'headquarters', name: 'Founders HQ', icon: Crown, restricted: 'founder' },
+  { id: 'headquarters', name: 'Founders HQ', icon: Crown, restricted: 'admin' },
   { id: 'legal', name: 'Legal Vault', icon: Shield, restricted: 'admin' },
   { id: 'finance', name: 'Finance Center', icon: DollarSign, restricted: 'admin' },
   { id: 'services', name: 'Services Hub', icon: Package },
@@ -59,15 +59,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+            <p className="text-xs text-gray-500 capitalize">{user?.profile?.role}</p>
           </div>
           <div className={`px-2 py-1 text-xs rounded-full ${
-            user?.role === 'founder' ? 'bg-purple-100 text-purple-700' :
-            user?.role === 'team' ? 'bg-blue-100 text-blue-700' :
-            user?.role === 'contractor' ? 'bg-orange-100 text-orange-700' :
+            user?.profile?.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+            user?.profile?.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+            user?.profile?.role === 'user' ? 'bg-orange-100 text-orange-700' :
             'bg-gray-100 text-gray-700'
           }`}>
-            {user?.role === 'founder' ? '👑' : user?.role === 'team' ? '⚡' : '🔧'}
+            {user?.profile?.role === 'admin' ? '👑' : 
+             user?.profile?.role === 'manager' ? '⚡' : 
+             user?.profile?.role === 'user' ? '🔧' : '👤'}
           </div>
         </div>
       </div>
@@ -77,8 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }
         {modules.map((module) => {
           const hasAccess = hasPermission(module.id, 'view');
           const isRestricted = module.restricted && (
-            (module.restricted === 'founder' && user?.role !== 'founder') ||
-            (module.restricted === 'admin' && !['founder'].includes(user?.role || ''))
+            (module.restricted === 'admin' && user?.profile?.role !== 'admin')
           );
           
           return (
@@ -100,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }
               <span className="font-medium">{module.name}</span>
               {isRestricted && (
                 <div className="ml-auto">
-                  {module.restricted === 'founder' ? (
+                  {module.restricted === 'admin' ? (
                     <Crown className="w-3 h-3 text-purple-500" />
                   ) : (
                     <Shield className="w-3 h-3 text-red-500" />

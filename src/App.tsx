@@ -33,11 +33,11 @@ const InternalOSContent: React.FC = () => {
   // Set default module based on user role
   useEffect(() => {
     if (profile) {
-      if (profile.role === 'founder') {
+      if (profile.role === 'admin') {
         setActiveModule('headquarters');
-      } else if (profile.role === 'team') {
+      } else if (profile.role === 'manager') {
         setActiveModule('services');
-      } else if (profile.role === 'contractor') {
+      } else if (profile.role === 'user') {
         setActiveModule('operations');
       }
     }
@@ -115,7 +115,7 @@ const AppContent: React.FC = () => {
     return <ClientPortalApp />;
   }
 
-  // Internal staff (founder, team, contractor) see the main OS
+  // Internal staff (admin, manager, user) see the main OS
   return <InternalOSContent />;
 };
 
