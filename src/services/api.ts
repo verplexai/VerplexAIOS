@@ -50,7 +50,7 @@ class ApiService<T extends keyof Tables> {
         .from(this.tableName)
         .select(select || '*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) handleSupabaseError(error);
       return data;
