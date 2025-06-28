@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup": "node scripts/setup-supabase.js",
+    "db:reset": "echo 'Please run: supabase db reset' && echo 'Or apply migrations manually in your Supabase dashboard'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
