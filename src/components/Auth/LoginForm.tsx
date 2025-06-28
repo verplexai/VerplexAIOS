@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Building } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Building, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginFormProps {
@@ -50,6 +50,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
     }));
   };
 
+  const fillDemoCredentials = (email: string, password: string) => {
+    setFormData(prev => ({
+      ...prev,
+      email,
+      password
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -78,12 +86,54 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
         {/* Demo Credentials */}
         {!isSignup && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-blue-900 mb-2">Demo Credentials</h3>
-            <div className="space-y-1 text-sm text-blue-800">
-              <p><strong>Founder:</strong> founder@verplex.ai / password</p>
-              <p><strong>Team:</strong> team@verplex.ai / password</p>
-              <p><strong>Contractor:</strong> contractor@verplex.ai / password</p>
-              <p><strong>Client:</strong> john@techcorp.com / password</p>
+            <h3 className="font-medium text-blue-900 mb-3 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Demo Credentials
+            </h3>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('founder@verplex.ai', 'password')}
+                className="w-full text-left p-2 rounded bg-white border border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                <div className="text-sm">
+                  <div className="font-medium text-blue-900">Founder (Admin)</div>
+                  <div className="text-blue-700">founder@verplex.ai / password</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('team@verplex.ai', 'password')}
+                className="w-full text-left p-2 rounded bg-white border border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                <div className="text-sm">
+                  <div className="font-medium text-blue-900">Team Member</div>
+                  <div className="text-blue-700">team@verplex.ai / password</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('contractor@verplex.ai', 'password')}
+                className="w-full text-left p-2 rounded bg-white border border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                <div className="text-sm">
+                  <div className="font-medium text-blue-900">Contractor</div>
+                  <div className="text-blue-700">contractor@verplex.ai / password</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('john@techcorp.com', 'password')}
+                className="w-full text-left p-2 rounded bg-white border border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                <div className="text-sm">
+                  <div className="font-medium text-blue-900">Client</div>
+                  <div className="text-blue-700">john@techcorp.com / password</div>
+                </div>
+              </button>
+            </div>
+            <div className="mt-3 text-xs text-blue-600">
+              Click any credential above to auto-fill the form
             </div>
           </div>
         )}
@@ -93,7 +143,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm">{error}</p>
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+                {error.includes('Invalid login credentials') && !isSignup && (
+                  <div className="mt-2 text-xs text-red-600">
+                    Try using one of the demo credentials above, or create a new account.
+                  </div>
+                )}
               </div>
             )}
 
