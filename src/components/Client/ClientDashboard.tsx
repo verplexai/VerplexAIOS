@@ -1,47 +1,44 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { BarChart3, FolderOpen, CreditCard, Clock, TrendingUp, CheckCircle, AlertCircle, Calendar, FileText } from 'lucide-react';
+import { useProjects, useTasks, useFiles } from '../../hooks/useSupabase';
 
 export const ClientDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  
+  // Fetch real data for the client
+  const { data: projects = [] } = useProjects();
+  const { data: tasks = [] } = useTasks();
+  const { data: files = [] } = useFiles();
 
-  // Mock data based on client
-  const clientData = {
-    '1': { // TechCorp Solutions
-      company: 'TechCorp Solutions',
-      activeProjects: 2,
-      totalInvestment: 45000,
-      pendingInvoices: 1,
-      avgProgress: 75,
-      recentActivity: [
-        { date: '2024-01-15', action: 'NLP Model training completed', type: 'success' },
-        { date: '2024-01-12', action: 'Dashboard mockups approved', type: 'info' },
-        { date: '2024-01-10', action: 'Project milestone reached', type: 'success' },
-      ],
-      upcomingMilestones: [
-        { name: 'Dashboard Development', dueDate: '2024-02-01', project: 'Sentiment Analysis' },
-        { name: 'Final Testing', dueDate: '2024-02-15', project: 'Sentiment Analysis' },
-      ]
-    },
-    '3': { // DataFlow Inc
-      company: 'DataFlow Inc',
-      activeProjects: 1,
-      totalInvestment: 60000,
-      pendingInvoices: 1,
-      avgProgress: 60,
-      recentActivity: [
-        { date: '2024-01-14', action: 'ML Pipeline architecture approved', type: 'success' },
-        { date: '2024-01-10', action: 'Data processing pipeline completed', type: 'success' },
-        { date: '2024-01-08', action: 'Weekly progress review', type: 'info' },
-      ],
-      upcomingMilestones: [
-        { name: 'ML Model Integration', dueDate: '2024-02-15', project: 'Analytics Pipeline' },
-        { name: 'Dashboard Development', dueDate: '2024-03-01', project: 'Analytics Pipeline' },
-      ]
-    }
-  };
+  // Filter data for current client
+  const clientProjects = projects.filter(p => p.client_id === user?.id);
+  const clientTasks = tasks.filter(t => 
+    clientProjects.some(p => p.id === t.project_id)
+  );
+  const clientFiles = files.filter(f => 
+    clientProjects.some(p => p.id === f.project_id)
+  );
 
-  const data = clientData[user?.clientId as keyof typeof clientData] || clientData['1'];
+  const activeProjects = clientProjects.filter(p => p.status === 'active').length;
+  const totalInvestment = clientProjects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
+  const avgProgress = clientProjects.length > 0 
+    ? Math.round(clientProjects.reduce((sum, p) => sum + (p.progress_percentage || 0), 0) / clientProjects.length)
+    : 0;
+
+  const recentActivity = [
+    { date: '2024-01-15', action: 'Project milestone completed', type: 'success' },
+    { date: '2024-01-12', action: 'New document shared', type: 'info' },
+    { date: '2024-01-10', action: 'Task assigned to team', type: 'info' },
+  ];
+
+  const upcomingMilestones = clientProjects.flatMap(project => 
+    project.end_date ? [{
+      name: `${project.name} Completion`,
+      dueDate: project.end_date,
+      project: project.name
+    }] : []
+  ).slice(0, 3);
 
   const StatCard = ({ title, value, change, trend, icon: Icon, color }: any) => (
     <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200">
@@ -75,8 +72,8 @@ export const ClientDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Welcome back, {user?.name}!</h1>
-            <p className="text-blue-100 mt-1">{data.company} • Client Portal</p>
+            <h1 className="text-2xl font-bold">Welcome back, {profile?.display_name || user?.email}!</h1>
+            <p className="text-blue-100 mt-1">Client Portal</p>
           </div>
           <div className="text-right">
             <p className="text-blue-100">Last login</p>
@@ -89,7 +86,7 @@ export const ClientDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Active Projects"
-          value={data.activeProjects}
+          value={activeProjects}
           change={0}
           trend="neutral"
           icon={FolderOpen}
@@ -97,15 +94,15 @@ export const ClientDashboard: React.FC = () => {
         />
         <StatCard
           title="Total Investment"
-          value={`$${data.totalInvestment.toLocaleString()}`}
+          value={`$${totalInvestment.toLocaleString()}`}
           change={0}
           trend="neutral"
           icon={CreditCard}
           color="bg-green-50 text-green-600 border-green-200"
         />
         <StatCard
-          title="Pending Invoices"
-          value={data.pendingInvoices}
+          title="Open Tasks"
+          value={clientTasks.filter(t => t.status !== 'done').length}
           change={0}
           trend="neutral"
           icon={Clock}
@@ -113,7 +110,7 @@ export const ClientDashboard: React.FC = () => {
         />
         <StatCard
           title="Avg Progress"
-          value={`${data.avgProgress}%`}
+          value={`${avgProgress}%`}
           change={5}
           trend="up"
           icon={TrendingUp}
@@ -127,7 +124,7 @@ export const ClientDashboard: React.FC = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
           <div className="space-y-4">
-            {data.recentActivity.map((activity, index) => (
+            {recentActivity.map((activity, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className={`w-2 h-2 rounded-full mt-2 ${
                   activity.type === 'success' ? 'bg-green-500' : 
@@ -146,18 +143,22 @@ export const ClientDashboard: React.FC = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="font-semibold text-gray-900 mb-4">Upcoming Milestones</h3>
           <div className="space-y-4">
-            {data.upcomingMilestones.map((milestone, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">{milestone.name}</p>
-                    <p className="text-xs text-blue-700">{milestone.project}</p>
+            {upcomingMilestones.length > 0 ? (
+              upcomingMilestones.map((milestone, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">{milestone.name}</p>
+                      <p className="text-xs text-blue-700">{milestone.project}</p>
+                    </div>
                   </div>
+                  <span className="text-sm font-medium text-blue-600">{milestone.dueDate}</span>
                 </div>
-                <span className="text-sm font-medium text-blue-600">{milestone.dueDate}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No upcoming milestones</p>
+            )}
           </div>
         </div>
       </div>
@@ -168,23 +169,25 @@ export const ClientDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">In Progress</h4>
-            <p className="text-2xl font-bold text-blue-900">{data.activeProjects}</p>
+            <p className="text-2xl font-bold text-blue-900">{activeProjects}</p>
             <p className="text-sm text-blue-700">Active projects</p>
           </div>
 
           <div className="bg-green-50 rounded-lg p-4">
             <h4 className="font-medium text-green-900 mb-2">Budget Utilization</h4>
             <p className="text-2xl font-bold text-green-900">
-              ${Math.round(data.totalInvestment * 0.75).toLocaleString()}
+              ${Math.round(totalInvestment * 0.75).toLocaleString()}
             </p>
             <p className="text-sm text-green-700">
-              of ${data.totalInvestment.toLocaleString()} budget
+              of ${totalInvestment.toLocaleString()} budget
             </p>
           </div>
 
           <div className="bg-purple-50 rounded-lg p-4">
             <h4 className="font-medium text-purple-900 mb-2">Team Members</h4>
-            <p className="text-2xl font-bold text-purple-900">3</p>
+            <p className="text-2xl font-bold text-purple-900">
+              {Array.from(new Set(clientProjects.flatMap(p => [p.project_manager_id].filter(Boolean)))).length}
+            </p>
             <p className="text-sm text-purple-700">Working on your projects</p>
           </div>
         </div>
