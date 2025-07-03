@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Building, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Building, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginFormProps {
@@ -86,10 +86,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
         {/* Demo Credentials */}
         {!isSignup && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-blue-900 mb-3 flex items-center">
-              <AlertCircle className="w-4 h-4 mr-2" />
+            <h3 className="font-medium text-blue-900 mb-2 flex items-center">
+              <Info className="w-4 h-4 mr-2" />
               Demo Credentials
             </h3>
+            <p className="text-xs text-blue-700 mb-3">
+              Click any credential below to auto-fill the login form. These are pre-configured demo accounts for testing.
+            </p>
             <div className="space-y-2">
               <button
                 type="button"
@@ -132,9 +135,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
                 </div>
               </button>
             </div>
-            <div className="mt-3 text-xs text-blue-600">
-              Click any credential above to auto-fill the form
-            </div>
           </div>
         )}
 
@@ -149,7 +149,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode, isSignup }) 
                 </div>
                 {error.includes('Invalid login credentials') && !isSignup && (
                   <div className="mt-2 text-xs text-red-600">
-                    Try using one of the demo credentials above, or create a new account.
+                    <p className="mb-1">The demo accounts need to be set up in your Supabase database first.</p>
+                    <p>Please ensure the demo users have been created, or try creating a new account instead.</p>
                   </div>
                 )}
               </div>
